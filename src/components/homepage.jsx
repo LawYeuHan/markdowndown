@@ -24,6 +24,7 @@ To read more about using these font, please visit the Next.js documentation:
 - Pages Directory: https://nextjs.org/docs/pages/building-your-application/optimizing/fonts
 **/
 import { Input } from "@/components/ui/input"
+import {InputTextarea} from "@/components/ui/inputarea.jsx";
 import { Textarea } from "@/components/ui/textarea"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
@@ -37,7 +38,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
- import { track } from "./analytics"
+ //import { // track } from "./analytics"
 import { useEffect, useState } from "react"
 import {
   Card,
@@ -100,7 +101,7 @@ export function Homepage() {
   }
 
   useEffect(()=>{
-    track("Homepage Loaded")
+    //// track("Homepage Loaded")
     const settings = localStorage.getItem("settings");
     if (settings){
       const parsed = JSON.parse(settings);
@@ -136,7 +137,7 @@ export function Homepage() {
       bigModel
     }
 
-    track("Convert Clicked", payload)
+    //// // track("Convert Clicked", payload)
 
     setIsLoading(true)
     const resp = await fetch("/api/tomd", {
@@ -152,7 +153,7 @@ export function Homepage() {
         title: "Failed to Convert",
         description: "Either the URL is invalid or the server is too busy. Please try again later.",
       })
-      track("Download Failed", payload)
+      // track("Download Failed", payload)
     }
     if (resp.ok && !downloadImages){
       const md = await resp.text();
@@ -166,7 +167,7 @@ export function Homepage() {
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
-      track("Downloaded Markdown", {withImages: false})
+      // track("Downloaded Markdown", {withImages: false})
 
     } 
     else if (resp.ok && downloadImages){
@@ -182,7 +183,7 @@ export function Homepage() {
         title: "Download Started",
         description: "Your markdown and images are being downloaded as a zip file",
       })
-      track("Downloaded Markdown", {withImages: true})
+      // track("Downloaded Markdown", {withImages: true})
     }
     saveSettingsToLocalStorage()
     setIsLoading(false)
@@ -192,7 +193,7 @@ export function Homepage() {
       <Toaster />
       <div className="container flex flex-col items-center justify-center">
         <div className="space-y-2 text-center mb-10">
-          <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl">📥<br/>Markdown<b>Down</b></h1>
+          <h1 className="text-3xl font-bold // tracking-tighter sm:text-4xl">📥<br/>Markdown<b>Down</b></h1>
           <p
             className="max-w-[600px] text-gray-500 md:text-xl/relaxed dark:text-gray-400">
             Convert any webpage to a clean markdown<br/> w/ images downloaded.
@@ -200,11 +201,11 @@ export function Homepage() {
         </div>
         <div className="w-full max-w-sm space-y-2">
           <div className="flex w-full max-w-sm items-center space-x-2 mb-10">
-            <Input value={url} type="text" placeholder="URL" onChange={val=>setUrl(val.target.value)} onKeyDown={(e)=>{
-              if (e.key === "Enter"){
-                submit()
-              }
-            }} />
+            <InputTextarea id="enter input"
+                      className="min-h-[5rem]"
+                      placeholder={`url 1\nurl 2\nurl 3`}
+                      onChange={(e) => setUrl(e.target.value)
+            } />
             <Button disabled={isLoading} type="submit" onClick={submit}>
               {isLoading ? "Converting..." : "Convert"}
             </Button>

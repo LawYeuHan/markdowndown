@@ -1,8 +1,6 @@
 // Import the necessary modules using ES6 import syntax
 import { JSDOM } from "jsdom";
 import { Readability } from "@mozilla/readability";
-import TurndownService from "turndown";
-import turndownPluginGfm from "joplin-turndown-plugin-gfm";
 import { processMarkdownWithImages } from "./_imgProcessor";
 import fs from "fs";
 import { runGPT } from "./_gpt";
@@ -68,7 +66,7 @@ const fetchCleanMarkdownFromUrl = async (
     const reader = new Readability(doc.window.document);
     const article = reader.parse();
 
-    // Convert the main content HTML to Markdown
+    //Convert the main content HTML to Markdown
     const TurndownService = require("turndown");
     const { gfm } = require("@joplin/turndown-plugin-gfm");
     const turndownService = new TurndownService();
