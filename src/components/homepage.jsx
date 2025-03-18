@@ -39,12 +39,11 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
  //import { // track } from "./analytics"
+import JSZip from 'jszip';
 import { useEffect, useState } from "react"
 import {
   Card,
   CardContent,
-  CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
@@ -75,7 +74,7 @@ function HelpTooltip({children}){
 }
 export function Homepage() {
   const { toast } = useToast()
-  const [url, setUrl] = useState("");
+  const [urls, setUrls] = useState("");
   const [imagesDir, setImagesDir] = useState("images");
   const [downloadImages, setDownloadImages] = useState(false);
   const [removeNonContent, setRemoveNonContent] = useState(true);
@@ -89,7 +88,7 @@ export function Homepage() {
 
   function saveSettingsToLocalStorage(){
     const settings = {
-      url,
+      url: urls,
       imagesDir,
       downloadImages,
       imagesBasePathOverride,
@@ -105,7 +104,7 @@ export function Homepage() {
     const settings = localStorage.getItem("settings");
     if (settings){
       const parsed = JSON.parse(settings);
-      setUrl(parsed.url || "")
+      setUrls(parsed.url || "")
       setApplyGpt(parsed.applyGpt || "")
       if (parsed.applyGpt) setGptEnabled(true)
       setRemoveNonContent(!!parsed.removeNonContent)
@@ -116,15 +115,47 @@ export function Homepage() {
     }
   }, [])
 
-  async function submit(){
+  const handleClick = async () => {
     if (isLoading){
       return;
     }
+
+    setIsLoading(true);
+    const processedUrls = urls.split('\n')
+    const zip = new JSZip();
+    for (const url of processedUrls) {
+      const content = await fetchMarkdownContent(url);
+      if (content == null) {
+        continue ;
+      }
+      const filename = `${getLastPartOfUrl(url)}.md` || "markdd.md";
+      zip.file(filename, content);
+    }
+    if (Object.keys(zip.files).length === 0) {
+      setIsLoading(false);
+      return
+    }
+
+    const zipBlob = await zip.generateAsync({ type: 'blob' });
+    const zipUrl = window.URL.createObjectURL(zipBlob);
+    const a = document.createElement('a');
+    a.href = zipUrl;
+    a.download = 'markdown_files.zip';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(zipUrl);
+    setIsLoading(false);
+    saveSettingsToLocalStorage()
+  };
+
+  async function fetchMarkdownContent(url){
     if (!url){
-      return toast({
+      toast({
         title: "Invalid URL",
         description: "Please enter a valid URL",
       })
+      return null
     }
     // const fullUrl = `/api/tomd?url=${url}&downloadImages=${downloadImages}&imagesDir=${imagesDir}&imagesBasePathOverride=${imagesBasePathOverride}&removeNonContent=${removeNonContent}`
     const payload = {
@@ -138,8 +169,7 @@ export function Homepage() {
     }
 
     //// // track("Convert Clicked", payload)
-
-    setIsLoading(true)
+    var seen = [];
     const resp = await fetch("/api/tomd", {
       method: "POST",
       headers: {
@@ -153,40 +183,34 @@ export function Homepage() {
         title: "Failed to Convert",
         description: "Either the URL is invalid or the server is too busy. Please try again later.",
       })
+      return null
       // track("Download Failed", payload)
     }
     if (resp.ok && !downloadImages){
       const md = await resp.text();
       toast({
         title: "Converted Successfully",
-        description: "Your markdown is being downloaded as a text file.",
+        description: "Your markdown is being downloaded as a md file.",
       })
-      const a = document.createElement('a');
-      a.href = `data:text/plain;charset=utf-8,${encodeURIComponent(md)}`;
-      a.download = `${getLastPartOfUrl(url)}.md` || "markdd.md";
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
+      return md
       // track("Downloaded Markdown", {withImages: false})
 
     } 
-    else if (resp.ok && downloadImages){
-      const blob = await resp.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `${getLastPartOfUrl(url)}.zip` || "markdd.zip";
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      toast({
-        title: "Download Started",
-        description: "Your markdown and images are being downloaded as a zip file",
-      })
-      // track("Downloaded Markdown", {withImages: true})
-    }
-    saveSettingsToLocalStorage()
-    setIsLoading(false)
+    // else if (resp.ok && downloadImages){
+    //   const blob = await resp.blob();
+    //   const url = window.URL.createObjectURL(blob);
+    //   const a = document.createElement('a');
+    //   a.href = url;
+    //   a.download = `${getLastPartOfUrl(url)}.zip` || "markdd.zip";
+    //   document.body.appendChild(a);
+    //   a.click();
+    //   window.URL.revokeObjectURL(url);
+    //   toast({
+    //     title: "Download Started",
+    //     description: "Your markdown and images are being downloaded as a zip file",
+    //   })
+    //   // track("Downloaded Markdown", {withImages: true})
+    // }
   }
   return (
     (<main className="w-full min-h-[100vh] py-6 space-y-6 flex justify-center items-center">
@@ -200,13 +224,14 @@ export function Homepage() {
           </p>
         </div>
         <div className="w-full max-w-sm space-y-2">
-          <div className="flex w-full max-w-sm items-center space-x-2 mb-10">
+          <div className="flex w-full max-w-sm flex-col items-center space-x-2 mb-10">
             <InputTextarea id="enter input"
+                       value={urls}
                       className="min-h-[5rem]"
                       placeholder={`url 1\nurl 2\nurl 3`}
-                      onChange={(e) => setUrl(e.target.value)
+                      onChange={val=> setUrls(val.target.value)
             } />
-            <Button disabled={isLoading} type="submit" onClick={submit}>
+            <Button disabled={isLoading} type="submit" onClick={handleClick} className="mt-4">
               {isLoading ? "Converting..." : "Convert"}
             </Button>
           </div>
