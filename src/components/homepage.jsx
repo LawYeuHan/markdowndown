@@ -251,31 +251,32 @@ export function Homepage() {
                 </HelpTooltip>
               </label>
             </div>
-            <div className="flex items-center space-x-2">
-              <Checkbox id="remove-images" checked={downloadImages} onClick={t=>setDownloadImages(!downloadImages)} />
-              <label className="text-sm leading-none" htmlFor="remove-images">
-                Download images locally and link them
-                <HelpTooltip>
-                  Instead of linking to remote images, download them locally and link them in the markdown.<br/>
-                  Gives you a zip file with markdown and images folder.
-                </HelpTooltip>
-              </label>
-            </div>
-            <div className="flex items-center space-x-2">
-            <Checkbox id="apply-gpt" checked={gptEnabled} onClick={t=>{
-              const newValue = !gptEnabled;
-              if (!newValue){
-                setApplyGpt("")
-              }
-              setGptEnabled(newValue);
-              }} />
-              <Label className="text-sm leading-none ml-2" htmlFor="apply-gpt">
-                Apply GPT Filter on Markdown
-                <HelpTooltip>
-                  Apply custom instructions to further clean up or transform the markdown content using GPT-3.5
-                </HelpTooltip>
-              </Label>
-            </div>
+                {/* feature temp not supported
+            {/*<div className="flex items-center space-x-2">*/}
+            {/*  <Checkbox id="remove-images" checked={downloadImages} onClick={t=>setDownloadImages(!downloadImages)} />*/}
+            {/*  <label className="text-sm leading-none" htmlFor="remove-images">*/}
+            {/*    Download images locally and link them*/}
+            {/*    <HelpTooltip>*/}
+            {/*      Instead of linking to remote images, download them locally and link them in the markdown.<br/>*/}
+            {/*      Gives you a zip file with markdown and images folder.*/}
+            {/*    </HelpTooltip>*/}
+            {/*  </label>*/}
+            {/*</div>*/}
+            {/*<div className="flex items-center space-x-2">*/}
+            {/*<Checkbox id="apply-gpt" checked={gptEnabled} onClick={t=>{*/}
+            {/*  const newValue = !gptEnabled;*/}
+            {/*  if (!newValue){*/}
+            {/*    setApplyGpt("")*/}
+            {/*  }*/}
+            {/*  setGptEnabled(newValue);*/}
+            {/*  }} />*/}
+            {/*  <Label className="text-sm leading-none ml-2" htmlFor="apply-gpt">*/}
+            {/*    Apply GPT Filter on Markdown*/}
+            {/*    <HelpTooltip>*/}
+            {/*      Apply custom instructions to further clean up or transform the markdown content using GPT-3.5*/}
+            {/*    </HelpTooltip>*/}
+            {/*  </Label>*/}
+            {/*</div>*/}
               </CardContent>
             </Card>
             
